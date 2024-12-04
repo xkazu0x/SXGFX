@@ -1,7 +1,7 @@
 CC := g++
 CFLAGS := -std=c++17 -Wall -Wextra -g
 INCLUDES := -I.
-LIBS := -luser32
+LIBS := -luser32 -lgdi32
 DEFINES :=
 
 MKDIR := mkdir
