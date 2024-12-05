@@ -56,6 +56,9 @@ namespace sx {
         uint32_t *allocate_pixels(uint32_t width, uint32_t height);
         void free_pixels();
         void present_pixels();
+
+        void clear(int32_t color);
+        void put_pixel(int32_t x, int32_t y, int32_t color);
         
     private:
         static LRESULT process_message_setup(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);

@@ -277,8 +277,9 @@ sx::window::allocate_pixels(uint32_t width, uint32_t height) {
                             m_memory_size,
                             MEM_RESERVE | MEM_COMMIT,
                             PAGE_READWRITE);
-    
-    return (uint32_t *) m_memory;
+
+    m_pixels = (uint32_t *) m_memory;
+    return m_pixels;
 }
 
 void
@@ -303,6 +304,23 @@ sx::window::present_pixels() {
                   &m_bitmap_info,
                   DIB_RGB_COLORS,
                   SRCCOPY);
+}
+
+void
+sx::window::clear(int32_t color) {
+    for (uint32_t i = 0; i < m_src_width * m_src_height; i++) {
+        m_pixels[i] = color;
+    }
+}
+
+void
+sx::window::put_pixel(int32_t x, int32_t y, int32_t color) {
+    int32_t width = static_cast<int32_t>(m_src_width);
+    int32_t height = static_cast<int32_t>(m_src_height);
+    
+    if (x >= 0 && y >= 0 && x < width && y < height) {
+        m_pixels[x + (((height - 1) - y) * width)] = color;
+    }
 }
 
 LRESULT
@@ -331,7 +349,7 @@ sx::window::process_message(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         close();
         return 0;
     } break;
-    case WM_SIZE: {        
+    case WM_SIZE: {
         m_info.current_width = LOWORD(lparam);
         m_info.current_height = HIWORD(lparam);
     } break;
