@@ -1,85 +1,9 @@
 #include "sx_window.h"
 
-// void
-// sx::window::create(std::string title, uint32_t width, uint32_t height, bool fullscreen) {
-//     m_info.title = title;
-    
-//     m_instance = GetModuleHandle(nullptr);
-
-//     WNDCLASSEXA window_class { };
-//     window_class.cbSize = sizeof(window_class);
-//     window_class.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
-//     window_class.lpfnWndProc = process_message_setup;
-//     window_class.cbClsExtra = 0;
-//     window_class.cbWndExtra = 0;
-//     window_class.hInstance = m_instance;
-//     window_class.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-//     window_class.hCursor = LoadCursor(nullptr, IDC_ARROW);
-//     window_class.hbrBackground = nullptr;
-//     window_class.lpszClassName = m_info.title.c_str();
-//     window_class.hIconSm = nullptr;
-
-//     m_atom = RegisterClassExA(&window_class);
-
-//     m_info.windowed_width = width;
-//     m_info.windowed_height = height;
-//     m_info.fullscreen_width = GetSystemMetrics(SM_CXSCREEN);
-//     m_info.fullscreen_height = GetSystemMetrics(SM_CYSCREEN);
-    
-//     uint32_t window_ex_style = 0;
-//     uint32_t window_style = 0;
-    
-//     if (fullscreen) {
-//         m_info.current_width = m_info.fullscreen_width;
-//         m_info.current_height = m_info.fullscreen_height;
-//         m_info.xpos = 0;
-//         m_info.ypos = 0;
-//         m_info.fullscreen = true;
-
-//         window_ex_style = WS_EX_APPWINDOW;
-//         window_style = WS_POPUP;
-        
-//         DEVMODE screen_settings = {};
-//         screen_settings.dmSize = sizeof(screen_settings);
-//         screen_settings.dmPelsWidth = m_info.current_width;
-//         screen_settings.dmPelsHeight = m_info.current_height;
-//         screen_settings.dmBitsPerPel = 32;
-//         screen_settings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-
-//         ChangeDisplaySettings(&screen_settings, CDS_FULLSCREEN);
-//     } else {
-//         m_info.current_width = m_info.windowed_width;
-//         m_info.current_height = m_info.windowed_height;
-//         m_info.xpos = (m_info.fullscreen_width - m_info.current_width) / 2;
-//         m_info.ypos = (m_info.fullscreen_height - m_info.current_height) / 2;
-//         m_info.fullscreen = false;
-        
-//         window_ex_style = WS_EX_APPWINDOW;
-//         window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION;
-        
-//         window_style |= WS_MINIMIZEBOX;
-        
-//         RECT border_rect = { 0, 0, 0, 0 };
-//         AdjustWindowRectEx(&border_rect, window_style, 0, window_ex_style);
-        
-//         m_info.current_width += border_rect.right - border_rect.left;
-//         m_info.current_height += border_rect.bottom - border_rect.top;
-//         m_info.xpos += border_rect.left;
-//         m_info.ypos += border_rect.top;
-//     }
-
-//     m_handle = CreateWindowExA(window_ex_style, MAKEINTATOM(m_atom),
-//                                m_info.title.c_str(), window_style,
-//                                m_info.xpos, m_info.ypos,
-//                                m_info.current_width, m_info.current_height,
-//                                nullptr, nullptr, m_instance, this);
-
-//     m_device = GetDC(m_handle);
-// }
-
 void
 sx::window::create(create_info *create_info) {
     m_info.title = create_info->title;
+    m_info.flags = create_info->flags;
     
     m_instance = GetModuleHandle(nullptr);
 
@@ -103,17 +27,21 @@ sx::window::create(create_info *create_info) {
     m_info.fullscreen_width = GetSystemMetrics(SM_CXSCREEN);
     m_info.fullscreen_height = GetSystemMetrics(SM_CYSCREEN);
     
-    uint32_t window_ex_style = 0;
-    uint32_t window_style = 0;
+    m_info.current_width = m_info.windowed_width;
+    m_info.current_height = m_info.windowed_height;
+    m_info.xpos = (m_info.fullscreen_width - m_info.current_width) / 2;
+    m_info.ypos = (m_info.fullscreen_height - m_info.current_height) / 2;
+
+    uint32_t window_ex_style = WS_EX_APPWINDOW;
+    uint32_t window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
     
-    if (create_info->fullscreen) {
+    if (create_info->flags & SX_WINDOW_FULLSCREEN) {
         m_info.current_width = m_info.fullscreen_width;
         m_info.current_height = m_info.fullscreen_height;
         m_info.xpos = 0;
         m_info.ypos = 0;
         m_info.fullscreen = true;
-
-        window_ex_style = WS_EX_APPWINDOW;
+        
         window_style = WS_POPUP;
         
         DEVMODE screen_settings = {};
@@ -123,32 +51,22 @@ sx::window::create(create_info *create_info) {
         screen_settings.dmBitsPerPel = 32;
         screen_settings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 
-        ChangeDisplaySettings(&screen_settings, CDS_FULLSCREEN);
-    } else {
-        m_info.current_width = m_info.windowed_width;
-        m_info.current_height = m_info.windowed_height;
-        m_info.xpos = (m_info.fullscreen_width - m_info.current_width) / 2;
-        m_info.ypos = (m_info.fullscreen_height - m_info.current_height) / 2;
-        m_info.fullscreen = false;
-        
-        window_ex_style = WS_EX_APPWINDOW;
-        window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION;
-        
-        window_style |= WS_MINIMIZEBOX;
-        if (create_info->resizable) {
-            window_style |= WS_MAXIMIZEBOX;
-            window_style |= WS_THICKFRAME;
-        }
-        
-        RECT border_rect = { 0, 0, 0, 0 };
-        AdjustWindowRectEx(&border_rect, window_style, 0, window_ex_style);
-        
-        m_info.current_width += border_rect.right - border_rect.left;
-        m_info.current_height += border_rect.bottom - border_rect.top;
-        m_info.xpos += border_rect.left;
-        m_info.ypos += border_rect.top;
+        ChangeDisplaySettings(&screen_settings, CDS_FULLSCREEN);       
     }
-
+    
+    if (create_info->flags & SX_WINDOW_RESIZABLE) {
+        window_style |= WS_MAXIMIZEBOX;
+        window_style |= WS_THICKFRAME;
+    }
+        
+    RECT border_rect = { 0, 0, 0, 0 };
+    AdjustWindowRectEx(&border_rect, window_style, 0, window_ex_style);
+        
+    m_info.current_width += border_rect.right - border_rect.left;
+    m_info.current_height += border_rect.bottom - border_rect.top;
+    m_info.xpos += border_rect.left;
+    m_info.ypos += border_rect.top;
+    
     m_handle = CreateWindowExA(window_ex_style, MAKEINTATOM(m_atom),
                                m_info.title.c_str(), window_style,
                                m_info.xpos, m_info.ypos,
@@ -182,7 +100,7 @@ sx::window::show() {
 
 void
 sx::window::close() {
-    if (m_info.fullscreen) ChangeDisplaySettings(NULL, 0);
+    if (m_info.flags & SX_WINDOW_FULLSCREEN) ChangeDisplaySettings(NULL, 0);
     m_state = SX_WINDOW_STATE_CLOSED;
 }
 
@@ -212,10 +130,13 @@ sx::window::change_display_mode() {
     LONG window_ex_style = GetWindowLong(m_handle, GWL_EXSTYLE);
     LONG window_style = GetWindowLong(m_handle, GWL_STYLE);
     
-    if (m_info.fullscreen) {
-        window_ex_style = WS_EX_OVERLAPPEDWINDOW;
-        window_style = WS_OVERLAPPEDWINDOW;
-        SetWindowLong(m_handle, GWL_EXSTYLE, window_ex_style);
+    if (m_info.flags & SX_WINDOW_FULLSCREEN && m_info.fullscreen) {
+        window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_MINIMIZEBOX;
+        if (m_info.flags & SX_WINDOW_RESIZABLE) {
+            window_style |= WS_MAXIMIZEBOX;
+            window_style |= WS_THICKFRAME;
+        }
+        
         SetWindowLong(m_handle, GWL_STYLE, window_style);
 
         m_info.current_width = m_info.windowed_width;
@@ -238,10 +159,8 @@ sx::window::change_display_mode() {
                      m_info.current_width,
                      m_info.current_height,
                      window_flags);
-    } else {
-        window_ex_style = WS_EX_APPWINDOW;
+    } else if (m_info.flags & SX_WINDOW_FULLSCREEN && !m_info.fullscreen){
         window_style = WS_POPUP;
-        SetWindowLong(m_handle, GWL_EXSTYLE, window_ex_style);
         SetWindowLong(m_handle, GWL_STYLE, window_style);
         
         m_info.current_width = m_info.fullscreen_width;

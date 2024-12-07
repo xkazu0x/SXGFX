@@ -6,15 +6,20 @@
 #include <cstdint>
 #include <string>
 
+enum window_flags {
+    SX_WINDOW_UNDEFINED = 0x00,
+    SX_WINDOW_FULLSCREEN = 0x01,
+    SX_WINDOW_RESIZABLE = 0x02,
+};
+
 namespace sx {    
     class window {
-    public:
+    public:        
         struct create_info {
             std::string title;
             uint32_t width;
             uint32_t height;
-            bool resizable;
-            bool fullscreen;
+            uint32_t flags;
         };
         
     private:
@@ -26,6 +31,7 @@ namespace sx {
             uint32_t windowed_height;
             uint32_t fullscreen_width;
             uint32_t fullscreen_height;
+            uint32_t flags;
             int32_t xpos;
             int32_t ypos;
             bool fullscreen;
@@ -38,7 +44,6 @@ namespace sx {
         };
         
     public:
-        //void create(std::string title, uint32_t width, uint32_t height, bool fullscreen);
         void create(create_info *create_info);
         void destroy();
 
