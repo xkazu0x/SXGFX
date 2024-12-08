@@ -104,26 +104,6 @@ sx::window::close() {
     m_state = SX_WINDOW_STATE_CLOSED;
 }
 
-bool
-sx::window::is_active() {
-    return m_state == SX_WINDOW_STATE_ACTIVE;
-}
-
-uint32_t
-sx::window::width() {
-    return m_info.current_width;
-}
-
-uint32_t
-sx::window::height() {
-    return m_info.current_height;
-}
-
-int8_t
-sx::window::get_key(int32_t key_code) {
-    return GetAsyncKeyState(key_code);
-}
-
 void
 sx::window::change_display_mode() {
     uint32_t window_flags = SWP_SHOWWINDOW;
@@ -178,68 +158,29 @@ sx::window::change_display_mode() {
     }
 }
 
-uint32_t*
-sx::window::allocate_pixels(uint32_t width, uint32_t height) {
-    m_src_width = width;
-    m_src_height = height;
-
-    m_bitmap_info = {};
-    m_bitmap_info.bmiHeader.biSize = sizeof(m_bitmap_info.bmiHeader);
-    m_bitmap_info.bmiHeader.biWidth = width;
-    m_bitmap_info.bmiHeader.biHeight = height;
-    m_bitmap_info.bmiHeader.biPlanes = 1;
-    m_bitmap_info.bmiHeader.biBitCount = 32;
-    m_bitmap_info.bmiHeader.biCompression = BI_RGB;
-    
-    m_memory_size = sizeof(uint32_t) * width * height;
-    m_memory = VirtualAlloc(0,
-                            m_memory_size,
-                            MEM_RESERVE | MEM_COMMIT,
-                            PAGE_READWRITE);
-
-    m_pixels = (uint32_t *) m_memory;
-    return m_pixels;
+bool
+sx::window::is_active() {
+    return m_state == SX_WINDOW_STATE_ACTIVE;
 }
 
-void
-sx::window::free_pixels() {
-    VirtualFree(m_memory,
-                m_memory_size,
-                MEM_RELEASE);
+uint32_t
+sx::window::width() {
+    return m_info.current_width;
 }
 
-void
-sx::window::present_pixels() {
-    StretchDIBits(m_device,
-                  0,
-                  0,
-                  m_info.current_width,
-                  m_info.current_height,
-                  0,
-                  0,
-                  m_src_width,
-                  m_src_height,
-                  m_memory,
-                  &m_bitmap_info,
-                  DIB_RGB_COLORS,
-                  SRCCOPY);
+uint32_t
+sx::window::height() {
+    return m_info.current_height;
 }
 
-void
-sx::window::clear(int32_t color) {
-    for (uint32_t i = 0; i < m_src_width * m_src_height; i++) {
-        m_pixels[i] = color;
-    }
+int8_t
+sx::window::get_key(int32_t key_code) {
+    return GetAsyncKeyState(key_code);
 }
 
-void
-sx::window::put_pixel(int32_t x, int32_t y, int32_t color) {
-    int32_t width = static_cast<int32_t>(m_src_width);
-    int32_t height = static_cast<int32_t>(m_src_height);
-    
-    if (x >= 0 && y >= 0 && x < width && y < height) {
-        m_pixels[x + (((height - 1) - y) * width)] = color;
-    }
+HDC
+sx::window::get_device() {
+    return m_device;
 }
 
 LRESULT

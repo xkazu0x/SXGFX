@@ -51,19 +51,13 @@ namespace sx {
         void update();
         void close();
         
+        void change_display_mode();
+        
         bool is_active();
         uint32_t width();
         uint32_t height();        
         int8_t get_key(int32_t key_code);
-        
-        void change_display_mode();
-        
-        uint32_t *allocate_pixels(uint32_t width, uint32_t height);
-        void free_pixels();
-        void present_pixels();
-
-        void clear(int32_t color);
-        void put_pixel(int32_t x, int32_t y, int32_t color);
+        HDC get_device();
         
     private:
         static LRESULT process_message_setup(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -76,14 +70,6 @@ namespace sx {
         ATOM m_atom;
         HWND m_handle;
         HDC m_device;
-
-        BITMAPINFO m_bitmap_info;
-        uint32_t m_memory_size;
-        void *m_memory;
-        
-        uint32_t *m_pixels;
-        uint32_t m_src_width;
-        uint32_t m_src_height;
         
         window_info m_info;
         window_state m_state;
